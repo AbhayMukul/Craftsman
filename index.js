@@ -11,6 +11,14 @@ app.listen('5000', () => {
     console.log('server running at port 5000');
 });
 
+var app_craftsman = express();
+app_craftsman.use(cors());
+app_craftsman.use(bodyparser.json());
+app_craftsman.listen('2000', () => {
+    console.log('craftsman server running at port 2000');
+});
+
+
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -31,6 +39,24 @@ db.connect((err) => {
     else {
         console.log("database conected");
     }
+})
+
+app_craftsman.get('/api/get/craftsman/:id',(req,res) => {
+    console.log(req.params.id);
+
+    let sql = `SELECT BOOKING_INFORMATION.SOCEITY,BOOKING_INFORMATION.FLAT,BOOKING_INFORMATION.time,BOOKING_INFORMATION.day
+                FROM BOOKING_INFORMATION, BOOKING_CONFIRMATION
+                WHERE BOOKING_CONFIRMATION.ID_CRAFTSMAN = ${req.params.id}
+                AND BOOKING_CONFIRMATION.ID_REQUEST = BOOKING_INFORMATION.ID;
+                `;
+
+    db.query(sql,(err,result) => {
+        if(err){
+            console.log(err);
+        }else{
+            res.send(result);
+        }
+    })
 })
 
 // close process at port 5000 sudo kill -9 `sudo lsof -t -i:5000`
