@@ -33,6 +33,26 @@ db.connect((err) => {
     }
 })
 
+app.get('/api/getAllGrievances', (req, res) => {
+    // , CRAFTSMAN.PHONE AS PHONE 
+    let sql = ` SELECT CRAFTSMAN.NAME AS NAME , BOOKING_INFORMATION.PROFESSION , BOOKING_INFORMATION.time , BOOKING_INFORMATION.day , BOOKING_INFORMATION.ACTIVE 
+                FROM CRAFTSMAN,BOOKING_INFORMATION,BOOKING_CONFIRMATION
+                WHERE BOOKING_CONFIRMATION.ID_CRAFTSMAN = CRAFTSMAN.ID 
+                AND BOOKING_CONFIRMATION.ID_REQUEST = BOOKING_INFORMATION.ID
+                AND BOOKING_INFORMATION.FLAT = '${req.query.flat}'
+                AND BOOKING_INFORMATION.SOCEITY = '${req.query.name}';
+                `;
+    
+    db.query(sql,(err,result) => {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            res.send(result);
+        }
+    })
+})
+
 app.post('/api/uploadGrievance', (req, res) => {
     var ID_GRIEVANCE;
     var ID_CRAFTSMAN;
@@ -60,9 +80,9 @@ app.post('/api/uploadGrievance', (req, res) => {
                                         ;`;
 
             db.query(sql_find_craftsman, (err, result) => {
-                if(err){
+                if (err) {
                     console.log(err);
-                }else{
+                } else {
                     var exists = JSON.parse(JSON.stringify(result[0]));
                     ID_CRAFTSMAN = exists.ID;
 
@@ -72,10 +92,10 @@ app.post('/api/uploadGrievance', (req, res) => {
 
                     let sql_booking_confirmation = `INSERT INTO BOOKING_CONFIRMATION VALUES (${ID_CRAFTSMAN},${ID_GRIEVANCE});`
 
-                    db.query(sql_booking_confirmation,(err,result) => {
-                        if(err){
+                    db.query(sql_booking_confirmation, (err, result) => {
+                        if (err) {
                             console.log(err);
-                        }else{
+                        } else {
                             res.send("Grievance logged");
                         }
                     })
