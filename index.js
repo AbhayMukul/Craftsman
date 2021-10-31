@@ -33,6 +33,8 @@ db.connect((err) => {
     }
 })
 
+// close process at port 5000 sudo kill -9 `sudo lsof -t -i:5000`
+
 app.get('/api/getAllGrievances', (req, res) => {
     // , CRAFTSMAN.PHONE AS PHONE 
     let sql = ` SELECT BOOKING_CONFIRMATION.ID_REQUEST AS GRIEVANCE_ID,BOOKING_CONFIRMATION.ID_CRAFTSMAN AS CRAFTSMAN_ID,CRAFTSMAN.NAME AS NAME , BOOKING_INFORMATION.PROFESSION , BOOKING_INFORMATION.time , BOOKING_INFORMATION.day , BOOKING_INFORMATION.ACTIVE 
@@ -42,13 +44,70 @@ app.get('/api/getAllGrievances', (req, res) => {
                 AND BOOKING_INFORMATION.FLAT = '${req.query.flat}'
                 AND BOOKING_INFORMATION.SOCEITY = '${req.query.name}';
                 `;
-    
-    db.query(sql,(err,result) => {
+
+    db.query(sql, (err, result) => {
         if (err) {
             console.log(err);
         }
         else {
             res.send(result);
+        }
+    })
+})
+
+// app.delete('/api/delete/:grievance_id&:new', (req,res) => {
+//     let sql = ` DELETE FROM TABLE BOOKING_CONFIRMATION
+//                 WHERE ID_REQUEST = ${req.params.grievance_id};
+//                 `;
+
+//     console.log(req.params.grievance_id,req.params.new);
+// })
+
+app.delete('/api/delete/done/:grievance_id', (req, res) => {
+    let sql = ` DELETE FROM BOOKING_CONFIRMATION
+                WHERE ID_REQUEST = ${req.params.grievance_id};
+                `;
+
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.log(err);
+        } else {
+            let sql_Update = `  UPDATE BOOKING_INFORMATION 
+                                SET BOOKING_INFORMATION.ACTIVE = 0
+                                WHERE BOOKING_INFORMATION.ID = ${req.params.grievance_id};
+                                `;
+
+            db.query(sql_Update, (err, result) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    res.send(result);
+                }
+            })
+        }
+    })
+})
+
+app.delete('/api/delete/remove/:grievance_id', (req, res) => {
+    let sql_remove_booking_confirmation = ` DELETE FROM BOOKING_CONFIRMATION
+                WHERE ID_REQUEST = ${req.params.grievance_id};
+                `;
+
+    db.query(sql_remove_booking_confirmation, (err, result) => {
+        if (err) {
+            console.log(err);
+        } else {
+            let sql_remove_booking_information = `  DELETE FROM BOOKING_INFORMATION
+                                WHERE ID = ${req.params.grievance_id};
+                                `;
+
+            db.query(sql_remove_booking_information, (err, result) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    res.send(result);
+                }
+            })
         }
     })
 })
@@ -72,8 +131,8 @@ app.post('/api/uploadGrievance', (req, res) => {
                                             SELECT CRAFTSMAN.ID FROM CRAFTSMAN,BOOKING_CONFIRMATION,BOOKING_INFORMATION
                                             WHERE CRAFTSMAN.ID = BOOKING_CONFIRMATION.ID_CRAFTSMAN
                                             AND BOOKING_CONFIRMATION.ID_REQUEST = BOOKING_INFORMATION.ID
-                                            AND BOOKING_INFORMATION.time = '12:00:00'
-                                            AND BOOKING_INFORMATION.day = '08/11/21'
+                                            AND BOOKING_INFORMATION.time = '${req.body.time}'
+                                            AND BOOKING_INFORMATION.day = '${req.body.day}'
                                             AND CITY = 'Pune'
                                             GROUP BY CRAFTSMAN.ID)
                                         ORDER BY RAND() LIMIT 0,1
