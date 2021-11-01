@@ -146,11 +146,15 @@ app.post('/api/uploadGrievance', (req, res) => {
                 VALUES (NULL,'${req.body.phone}','${req.body.society}','${req.body.flat}','${req.body.grievance}','${req.body.time}','${req.body.day}',1);
                 `;
 
+    console.log("receiving new Grievance from " + req.body.society);
+
     db.query(sql_booking_information, (err, result) => {
         if (err) {
             console.log(err);
         } else {
             ID_GRIEVANCE = result.insertId;
+
+            console.log("finding free craftsman");
 
             let sql_find_craftsman = ` SELECT CRAFTSMAN.ID AS ID FROM CRAFTSMAN 
                                         WHERE CRAFTSMAN.ID NOT IN (
@@ -164,6 +168,8 @@ app.post('/api/uploadGrievance', (req, res) => {
                                         ORDER BY RAND() LIMIT 0,1
                                         ;`;
 
+            console.log("free craftsman found");
+
             db.query(sql_find_craftsman, (err, result) => {
                 if (err) {
                     console.log(err);
@@ -171,9 +177,7 @@ app.post('/api/uploadGrievance', (req, res) => {
                     var exists = JSON.parse(JSON.stringify(result[0]));
                     ID_CRAFTSMAN = exists.ID;
 
-                    console.log("ID_GRIEVANCE : " + ID_GRIEVANCE);
-                    console.log("ID_CRAFTSMAN : " + ID_CRAFTSMAN);
-
+                    console.log("assigning " + ID_CRAFTSMAN + " the grievance " + ID_GRIEVANCE);
 
                     let sql_booking_confirmation = `INSERT INTO BOOKING_CONFIRMATION VALUES (${ID_CRAFTSMAN},${ID_GRIEVANCE});`
 
@@ -182,6 +186,7 @@ app.post('/api/uploadGrievance', (req, res) => {
                             console.log(err);
                         } else {
                             res.send("Grievance logged");
+                            console.log("grievance logged");
                         }
                     })
                 }
