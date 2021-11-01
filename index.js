@@ -90,9 +90,15 @@ app.get('/api/getAllGrievances', (req, res) => {
 // })
 
 app.delete('/api/delete/done/:grievance_id', (req, res) => {
+
+    console.log("-----------------------GRIEVANCE RESOLVED--------------------");
+    console.log("Grievance with id " + req.params.grievance_id + " is resolved");
+    
     let sql = ` DELETE FROM BOOKING_CONFIRMATION
                 WHERE ID_REQUEST = ${req.params.grievance_id};
                 `;
+
+    console.log("Removing from BOOKING_INFORMATION");
 
     db.query(sql, (err, result) => {
         if (err) {
@@ -102,6 +108,8 @@ app.delete('/api/delete/done/:grievance_id', (req, res) => {
                                 SET BOOKING_INFORMATION.ACTIVE = 0
                                 WHERE BOOKING_INFORMATION.ID = ${req.params.grievance_id};
                                 `;
+
+            console.log("Removing from BOOKING_CONFIRMATION");
 
             db.query(sql_Update, (err, result) => {
                 if (err) {
@@ -115,9 +123,15 @@ app.delete('/api/delete/done/:grievance_id', (req, res) => {
 })
 
 app.delete('/api/delete/remove/:grievance_id', (req, res) => {
+    
+    console.log("-----------------------REMOVE GRIEVANCE--------------------");
+    console.log("Remove Grievance with id " + req.params.grievance_id);
+
     let sql_remove_booking_confirmation = ` DELETE FROM BOOKING_CONFIRMATION
                 WHERE ID_REQUEST = ${req.params.grievance_id};
                 `;
+
+    console.log("Removing from BOOKING_CONFIRMATION");
 
     db.query(sql_remove_booking_confirmation, (err, result) => {
         if (err) {
@@ -127,6 +141,8 @@ app.delete('/api/delete/remove/:grievance_id', (req, res) => {
                                 WHERE ID = ${req.params.grievance_id};
                                 `;
 
+            console.log("Removing from BOOKING_INFORMATION");
+
             db.query(sql_remove_booking_information, (err, result) => {
                 if (err) {
                     console.log(err);
@@ -134,6 +150,8 @@ app.delete('/api/delete/remove/:grievance_id', (req, res) => {
                     res.send(result);
                 }
             })
+
+            console.log("removed");
         }
     })
 })
@@ -146,6 +164,7 @@ app.post('/api/uploadGrievance', (req, res) => {
                 VALUES (NULL,'${req.body.phone}','${req.body.society}','${req.body.flat}','${req.body.grievance}','${req.body.time}','${req.body.day}',1);
                 `;
 
+    console.log("-----------------------NEW GRIEVANCE--------------------");
     console.log("receiving new Grievance from " + req.body.society);
 
     db.query(sql_booking_information, (err, result) => {
